@@ -1,6 +1,7 @@
 "use client";
 import React from 'react'
 import dynamic from "next/dynamic";
+
 const Chart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
@@ -10,18 +11,20 @@ interface LanguageChartProps {
 }
 
 const LanguageChart: React.FC<LanguageChartProps> = ({ languages }) => {
+  const chartType = "donut" as "donut"
+
   const chartOptions = {
     chart: {
-      type: "donut" as "donut",
-      width: "100%", // Set chart width to 100% for flexibility
+      type: chartType,
+      width: "100%", 
     },
     labels: Object.keys(languages),
     responsive: [
       {
-        breakpoint: 1200, // Large desktop
+        breakpoint: 1200,
         options: {
           chart: {
-            width: "70%", // 70% of the container on large desktops
+            width: "70%", 
           },
           legend: {
             position: "right",
@@ -31,10 +34,10 @@ const LanguageChart: React.FC<LanguageChartProps> = ({ languages }) => {
         },
       },
       {
-        breakpoint: 1024, // Tablet and smaller devices
+        breakpoint: 1024, 
         options: {
           chart: {
-            width: "80%", // 80% width on tablets
+            width: "80%",
           },
           legend: {
             position: "right",
@@ -44,25 +47,25 @@ const LanguageChart: React.FC<LanguageChartProps> = ({ languages }) => {
         },
       },
       {
-        breakpoint: 768, // Mobile landscape
+        breakpoint: 768, 
         options: {
           chart: {
-            width: "90%", // 90% width on mobile landscape
+            width: "90%", 
           },
           legend: {
-            position: "bottom", // Move legend to bottom for better mobile experience
+            position: "bottom",
             horizontalAlign: "center",
           },
         },
       },
       {
-        breakpoint: 480, // Mobile portrait
+        breakpoint: 480, 
         options: {
           chart: {
-            width: "100%", // Full width on smaller mobile screens
+            width: "100%", 
           },
           legend: {
-            position: "bottom", // Keep legend at the bottom
+            position: "bottom", 
             horizontalAlign: "center",
           },
         },

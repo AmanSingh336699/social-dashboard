@@ -1,4 +1,20 @@
-import { GitHubActivity, GitHubFollower, GitHubProfile, GitHubRepo } from "../../types/githubType";
+import { GitHubActivity, GitHubFollower, GitHubProfile, GitHubRepo, Language, GitHubLanguage } from "../../types/githubType";
+
+interface Commit {
+  commit: {
+    committer: {
+      date: string;
+    };
+    message: string;
+  };
+}
+
+interface RepoCommit extends GitHubRepo {
+  last_commit: string;
+  commit_message: string;
+  languages: { language: string; percentage: number }[];
+}
+
 
 export const fetchUserProfile = async (username: string, token: string): Promise<GitHubProfile> =>{
     const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}`, {
@@ -9,10 +25,10 @@ export const fetchUserProfile = async (username: string, token: string): Promise
     if(!response.ok){
         throw new Error("Failed to fetch user profile")
     }
-    return await response.json()
+    return await response.json() as GitHubProfile
 }
 
-export const fetchUserRepo = async (username: string, token: string): Promise<GitHubRepo[]> => {
+export const fetchUserRepo = async (username: string, token: string): Promise<RepoCommit[]> => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}/repos`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -23,10 +39,10 @@ export const fetchUserRepo = async (username: string, token: string): Promise<Gi
     throw new Error("Failed to fetch user repositories");
   }
 
-  const repos = await response.json();
+  const repos = await response.json() as GitHubRepo[];
 
   const reposWithCommitsAndLanguages = await Promise.all(
-    repos.map(async (repo: any) => {
+    repos.map(async (repo: GitHubRepo) => {
       if (!repo.commits_url) {
         return { ...repo, last_commit: "Unavailable", languages: [], commit_message: "Unavailable" };
       }
@@ -44,7 +60,7 @@ export const fetchUserRepo = async (username: string, token: string): Promise<Gi
         }
       );
       if (languagesResponse.ok) {
-        const languageData = await languagesResponse.json();
+        const languageData = await languagesResponse.json() as GitHubLanguage;
         const totalLines: number = (Object.values(languageData) as number[]).reduce(
           (sum, value) => sum + value,
           0
@@ -58,7 +74,7 @@ export const fetchUserRepo = async (username: string, token: string): Promise<Gi
       let last_commit = "Unavailable";
       let commit_message = "Unavailable";
       if (commitsResponse.ok) {
-        const commits = await commitsResponse.json();
+        const commits = await commitsResponse.json() as Commit[];
         const lastCommit = commits[0]
         
         if (lastCommit) {
@@ -79,10 +95,11 @@ export const fetchUserRepo = async (username: string, token: string): Promise<Gi
     })
   );
 
-  return reposWithCommitsAndLanguages;
+  return reposWithCommitsAndLanguages as RepoCommit[];
 };
 
-export const fetchRepoLanguages = async (repos: GitHubRepo[], token: string) => {
+
+export const fetchRepoLanguages = async (repos: GitHubRepo[], token: string): Promise<{ [key: string]: number }> => {
     const languages: { [key: string]: number } = {}
     for(const repo of repos){
         const response = await fetch(repo.languages_url, {
@@ -95,7 +112,7 @@ export const fetchRepoLanguages = async (repos: GitHubRepo[], token: string) => 
             throw new Error("Failed to fetch repo languages")
         }
 
-        const repoLanguages: { [key: string]: number } = await response.json()
+        const repoLanguages = await response.json() as { [key: string]: number }
         Object.entries(repoLanguages).forEach(([language, bytes]) => {
             languages[language] = (languages[language] || 0) + bytes
         })
@@ -112,7 +129,7 @@ export const fetchUserFollowers = async (username: string, token: string): Promi
     if(!response.ok){
         throw new Error("Failed to fetch user profile")
     }
-    return await response.json()
+    return await response.json() as GitHubFollower[]
 }
 
 export const fetchUserFollowing = async (username: string, token: string): Promise<GitHubFollower[]> => {
@@ -124,7 +141,7 @@ export const fetchUserFollowing = async (username: string, token: string): Promi
     if(!response.ok){
         throw new Error("Failed to fetch user profile")
     }
-    return await response.json()
+    return await response.json() as GitHubFollower[]
 }
 
 export const fetchUserRecentActivity = async (username: string, token: string): Promise<GitHubActivity[]> => {
@@ -137,6 +154,6 @@ export const fetchUserRecentActivity = async (username: string, token: string): 
     if(!response.ok){
         throw new Error("Failed to fetch user activity")
     }
-    const events = await response.json()
+    const events = await response.json() as GitHubActivity[]
     return events
 }

@@ -10,7 +10,7 @@ interface FollowersSectionProps {
   following: GitHubFollower[];
 }
 
-const ITEMS_PER_PAGE = 6; // Items per page for pagination
+const ITEMS_PER_PAGE = 6;
 
 const FollowersSection: React.FC<FollowersSectionProps> = ({ followers, following }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -19,16 +19,16 @@ const FollowersSection: React.FC<FollowersSectionProps> = ({ followers, followin
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
 
-  const x = useMotionValue(0); // Mouse position for tooltip movement
+  const x = useMotionValue(0);
   const springConfig = { stiffness: 100, damping: 5 };
   const rotate = useSpring(useTransform(x, [-100, 100], [-45, 45]), springConfig);
   const translateX = useSpring(useTransform(x, [-100, 100], [-50, 50]), springConfig);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLImageElement, MouseEvent>, index: number, type: "followers" | "following") => {
     const halfWidth = (event.target as HTMLImageElement).offsetWidth / 2;
-    x.set(event.nativeEvent.offsetX - halfWidth); // Adjust tooltip position
-    setHoveredIndex(index); // Set hovered index for tooltip visibility
-    setHoveredType(type); // Set hovered type (followers or following)
+    x.set(event.nativeEvent.offsetX - halfWidth);
+    setHoveredIndex(index);
+    setHoveredType(type);
   };
 
   const handleMouseLeave = () => {
@@ -94,7 +94,7 @@ const FollowersSection: React.FC<FollowersSectionProps> = ({ followers, followin
               className="relative flex items-center space-x-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md transition-all hover:shadow-lg"
               variants={itemVariants}
               whileHover="hover"
-              onMouseLeave={handleMouseLeave} // Hide tooltip on hover out
+              onMouseLeave={handleMouseLeave}
               transition={{ duration: 0.3 }}
             >
               <AnimatePresence mode="wait">
@@ -125,7 +125,7 @@ const FollowersSection: React.FC<FollowersSectionProps> = ({ followers, followin
                 )}
               </AnimatePresence>
               <Image
-                onMouseMove={(e) => handleMouseMove(e, index, type)} // Track mouse movement
+                onMouseMove={(e) => handleMouseMove(e, index, type)}
                 height={100}
                 width={100}
                 src={user.avatar_url}
@@ -133,7 +133,6 @@ const FollowersSection: React.FC<FollowersSectionProps> = ({ followers, followin
                 className="object-cover !m-0 !p-0 object-top rounded-full h-14 w-14 border-2 group-hover:scale-105 group-hover:z-30 border-white relative transition duration-500"
               />
               <div className="ml-4">
-                {/* Removed the username here as it's shown in the tooltip */}
                 <Link
                   href={`https://github.com/${user.login}`}
                   target="_blank"
