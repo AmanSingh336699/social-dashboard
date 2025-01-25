@@ -5,7 +5,7 @@ import { BsClockHistory, BsSearch } from "react-icons/bs";
 import { RiGitCommitLine } from "react-icons/ri";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { memo, useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useDebounce } from 'use-debounce';
 
 interface RepoListProps {
@@ -19,14 +19,18 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300); 
 
-  const filteredRepos = repos.filter((repo) =>
-    repo.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  );
+  const filteredRepos = useMemo(() => {
+    return repos.filter((repo) =>
+      repo.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+  }, [repos, debouncedSearchQuery]);
 
   const indexOfLastRepo = currentPage * reposPerPage;
   const indexOfFirstRepo = indexOfLastRepo - reposPerPage;
   const currentRepos = filteredRepos.slice(indexOfFirstRepo, indexOfLastRepo);
-  const totalPages = Math.ceil(filteredRepos.length / reposPerPage);
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredRepos.length / reposPerPage);
+  }, [filteredRepos, reposPerPage])
 
   const handleSearchClick = useCallback(() => {
     setIsSearchVisible(prev => !prev)
@@ -76,7 +80,7 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
     }
   };
 
-  const RepoItem = memo(({ repo }: { repo: GitHubRepo }) => (
+  const RepoItem = ({ repo }: { repo: GitHubRepo }) => (
     <motion.li
       key={repo.id}
       className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-lg flex flex-col justify-between"
@@ -125,7 +129,7 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
         </div>
       )}
     </motion.li>
-  ))
+  )
 
   RepoList.displayName = "RepoList"
 
@@ -191,4 +195,6 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
   );
 };
 
-export default memo(RepoList);
+RepoList.displayName = "RepoList"
+
+export default RepoList;
