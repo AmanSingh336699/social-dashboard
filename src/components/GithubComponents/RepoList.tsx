@@ -125,7 +125,9 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
         </div>
       )}
     </motion.li>
-  ));
+  ))
+
+  RepoList.displayName = "RepoList"
 
   return (
     <motion.div
