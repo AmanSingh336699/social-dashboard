@@ -1,4 +1,4 @@
-import { GitHubActivity, GitHubFollower, GitHubProfile, GitHubRepo, Language, GitHubLanguage } from "../../types/githubType";
+import { GitHubActivity, GitHubFollower, GitHubProfile, GitHubRepo, GitHubLanguage } from "../../types/githubType";
 
 interface Commit {
   commit: {
