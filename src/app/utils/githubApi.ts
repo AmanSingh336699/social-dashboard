@@ -13,57 +13,74 @@ export const fetchUserProfile = async (username: string, token: string): Promise
 }
 
 export const fetchUserRepo = async (username: string, token: string): Promise<GitHubRepo[]> => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}/repos`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+  const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}/repos`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch user repositories");
+  }
+
+  const repos = await response.json();
+
+  const reposWithCommitsAndLanguages = await Promise.all(
+    repos.map(async (repo: any) => {
+      if (!repo.commits_url) {
+        return { ...repo, last_commit: "Unavailable", languages: [], commit_message: "Unavailable" };
       }
-    });
-  
-    if (!response.ok) {
-      throw new Error("Failed to fetch user repositories");
-    }
-  
-    const repos = await response.json();
-  
-    const reposWithCommitsAndLanguages = await Promise.all(
-      repos.map(async (repo: any) => {
-        if (!repo.commits_url) {
-          return { ...repo, last_commit: "Unavailable", languages: [] };
+
+      const commitUrl = repo.commits_url.replace("{/sha}", ""); // Removing the placeholder
+      const commitsResponse = await fetch(commitUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      let languages: { language: string; percentage: number }[] = [];
+      const languagesResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/repos/${username}/${repo.name}/languages`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-  
-        const commitUrl = repo.commits_url.replace("{/sha}", "");
-        const commitsResponse = await fetch(commitUrl, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-  
-        let languages: { language: string; percentage: number }[] = [];
-        const languagesResponse = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/repos/${username}/${repo.name}/languages`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (languagesResponse.ok) {
-          const languageData = await languagesResponse.json();
-          const totalLines: number = (Object.values(languageData) as number[]).reduce((sum, value) => sum + value, 0);
-          languages = Object.entries(languageData).map(([language, lines]) => ({
-            language,
-            percentage: (lines as number / totalLines) * 100
-          }));
+      );
+      if (languagesResponse.ok) {
+        const languageData = await languagesResponse.json();
+        const totalLines: number = (Object.values(languageData) as number[]).reduce(
+          (sum, value) => sum + value,
+          0
+        );
+        languages = Object.entries(languageData).map(([language, lines]) => ({
+          language,
+          percentage: (lines as number / totalLines) * 100,
+        }));
+      }
+
+      let last_commit = "Unavailable";
+      let commit_message = "Unavailable";
+      if (commitsResponse.ok) {
+        const commits = await commitsResponse.json();
+        const lastCommit = commits[0]
+        
+        if (lastCommit) {
+          const commitDate = lastCommit.commit.committer.date;
+          const formattedDate = new Date(commitDate);
+          last_commit = `${formattedDate.toLocaleDateString()} at ${formattedDate.toLocaleTimeString()}`;
+
+          commit_message = lastCommit.commit.message;
         }
-  
-        if (commitsResponse.ok) {
-          const commits = await commitsResponse.json();
-          return {
-            ...repo,
-            last_commit: commits[0]?.commit?.committer?.date || "Unavailable",
-            languages,
-          };
-        } else {
-          return { ...repo, last_commit: "Unavailable", languages };
-        }
-      })
-    );
-  
-    return reposWithCommitsAndLanguages;
-  };
+      }
+      
+      return {
+        ...repo,
+        last_commit,
+        commit_message, 
+        languages,
+      };
+    })
+  );
+
+  return reposWithCommitsAndLanguages;
+};
 
 export const fetchRepoLanguages = async (repos: GitHubRepo[], token: string) => {
     const languages: { [key: string]: number } = {}
@@ -111,7 +128,7 @@ export const fetchUserFollowing = async (username: string, token: string): Promi
 }
 
 export const fetchUserRecentActivity = async (username: string, token: string): Promise<GitHubActivity[]> => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}/events`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}/events/public?per_page=5`, {
         headers: {
             Authorization: `Bearer ${token}`,
         }
@@ -120,6 +137,6 @@ export const fetchUserRecentActivity = async (username: string, token: string): 
     if(!response.ok){
         throw new Error("Failed to fetch user activity")
     }
-
-    return await response.json()
+    const events = await response.json()
+    return events
 }

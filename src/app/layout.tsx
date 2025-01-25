@@ -3,13 +3,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      staleTime: 60000,
+      cacheTime: 300000
+    },
+  },
+})
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const queryClient = new QueryClient()
   return (
     <html lang="en">
       <body>

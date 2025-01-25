@@ -7,6 +7,11 @@ export interface GitHubProfile {
     following: number;
 }
 
+export interface Language {
+    language: string;
+    percentage: number;
+}
+
 export interface GitHubRepo {
     id: number;
     name: string;
@@ -14,9 +19,10 @@ export interface GitHubRepo {
     stargazers_count: number;
     forks_count: number;
     last_commit: string;
+    commit_message: string;
     languages_url: string;
     description: string;
-    languages: string[];
+    languages: Language[];
 }
 
 export interface GitHubFollower {
