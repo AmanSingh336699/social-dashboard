@@ -32,7 +32,7 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
     setIsSearchVisible(prev => !prev)
   },[]);
 
-  interface SearchChangeEvent extends React.ChangeEvent<HTMLInputElement> {}
+  type SearchChangeEvent = React.ChangeEvent<HTMLInputElement>
 
   const handleSearchChange = useCallback((event: SearchChangeEvent) => {
     setSearchQuery(event.target.value);
