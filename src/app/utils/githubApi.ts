@@ -47,7 +47,7 @@ export const fetchUserRepo = async (username: string, token: string): Promise<Re
         return { ...repo, last_commit: "Unavailable", languages: [], commit_message: "Unavailable" };
       }
 
-      const commitUrl = repo.commits_url.replace("{/sha}", ""); // Removing the placeholder
+      const commitUrl = repo.commits_url.replace("{/sha}", "");
       const commitsResponse = await fetch(commitUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });

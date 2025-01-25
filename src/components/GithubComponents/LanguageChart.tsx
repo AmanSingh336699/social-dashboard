@@ -11,7 +11,7 @@ interface LanguageChartProps {
 }
 
 const LanguageChart: React.FC<LanguageChartProps> = ({ languages }) => {
-  const chartType = "donut" as "donut"
+  const chartType = "donut" as const
 
   const chartOptions = {
     chart: {

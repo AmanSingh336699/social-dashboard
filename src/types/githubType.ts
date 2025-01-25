@@ -23,7 +23,6 @@ export interface GitHubRepo {
     commits_url: string;
     languages_url: string;
     description: string;
-    languages: Language[];
 }
 
 
