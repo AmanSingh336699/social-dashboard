@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useDebounce } from 'use-debounce';
 import toast from "react-hot-toast";
+import ConfirmModal from "../ConfirmModal";
 
 interface RepoListProps {
   repos: GitHubRepo[];
@@ -88,23 +89,23 @@ const RepoList: React.FC<RepoListProps> = ({ repos, accessToken, refreshRepos })
 
   const RepoItem = ({ repo }: { repo: GitHubRepo }) => {
     const [dropDownOpen, setDropDownOpen] = useState(false)
-    const dropDownRef = useRef(null)
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (dropDownRef.current && !(dropDownRef.current as HTMLElement).contains(event.target as Node)) {
-        setDropDownOpen(false);
-        }
-      };
+    const dropDownRef = useRef<HTMLDivElement>(null)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
+    const handleClickOutside = useCallback((event: MouseEvent) => {
+      if (dropDownRef.current && !dropDownRef.current.contains(event.target as Node)) {
+        setDropDownOpen(false);
+      }
+    }, []);
+
+    useEffect(() => {
       document.addEventListener("mousedown", handleClickOutside);
       return () => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
-    }, [])
+    }, [handleClickOutside])
     const handleDeleteRepo = async () => {
-      const confirmDelete = confirm(`Are you sure you want to delete the repository: ${repo.name}?`) //new
-      if(!confirmDelete) return //new
-  
+      setIsModalOpen(false)
       try {
         const response = await fetch("/api/delete-repo", {
           method: "DELETE",
@@ -137,7 +138,7 @@ const RepoList: React.FC<RepoListProps> = ({ repos, accessToken, refreshRepos })
           transition={{ duration: 0.3 }}
         >
           <div className="absolute top-2 right-2" ref={dropDownRef}>
-            <button className="text-gray-600 dark:text-gray-300" onClick={() => setDropDownOpen(prev => !prev)}>
+            <button className="text-gray-700 dark:text-gray-300" onClick={() => setDropDownOpen(prev => !prev)}>
               <BsThreeDotsVertical className="text-xl" />
             </button>
             <AnimatePresence>
@@ -145,8 +146,8 @@ const RepoList: React.FC<RepoListProps> = ({ repos, accessToken, refreshRepos })
                 <motion.div initial={{ opacity: 0, y: -10, scale: 0.95}}
                  animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.95 }} 
                  transition={{ duration: 0.2 }} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg p-2 rounded-lg border border-gray-300 dark:border-gray-600">
-                  <button className="text-rose-600 px-4 py-2 block w-full text-left hover:bg-rose-50 dark:hover:bg-rose-700"
-                    onClick={handleDeleteRepo}>
+                  <button className="text-rose-600 px-4 rounded-md py-2 block w-full text-left hover:bg-rose-50 dark:hover:bg-rose-700"
+                    onClick={() => setIsModalOpen(true)}>
                     Delete Repo
                   </button>
                 </motion.div>
@@ -163,6 +164,7 @@ const RepoList: React.FC<RepoListProps> = ({ repos, accessToken, refreshRepos })
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 truncate">
             {repo.description || "No description available."}
           </p>
+          <ConfirmModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleDeleteRepo} />
           {repo.languages && repo.languages.length > 0 && (
             <div className="text-sm mb-4">
               <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Languages:</h3>
