@@ -121,8 +121,8 @@ const RepoList: React.FC<RepoListProps> = ({ repos, accessToken, refreshRepos })
         } else {
           toast.error("Failed to delete repository. Please try again.")
         }
-      } catch (error) {
-        toast.error("Error deleting repository")
+      } catch (e: any) {
+        toast.error(`Error deleting repository || ${e.message}`)
       }
     }
     return (
