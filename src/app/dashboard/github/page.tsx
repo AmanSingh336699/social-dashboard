@@ -22,6 +22,7 @@ const LanguageChart = dynamic(() => import("@/components/GithubComponents/Langua
 })
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 const FollowersSection = dynamic(() => import("@/components/GithubComponents/FollowersSection"), {
   ssr: false
 })
@@ -40,7 +41,7 @@ const GitHubDashboard = () => {
     enabled: !!username && !!token,
   });
 
-  const { data: repos, isLoading: reposLoading } = useQuery<GitHubRepo[]>({
+  const { data: repos, isLoading: reposLoading, refetch: refreshRepos } = useQuery<GitHubRepo[]>({
     queryKey: ["githubRepo", username],
     queryFn: () => fetchUserRepo(username, token),
     enabled: !!username && !!token
@@ -100,10 +101,11 @@ const GitHubDashboard = () => {
       transition={{ duration: 0.8 }}
     >
       <ProfileSection profile={profile} />
-      {<RepoList repos={repos || []} />}
+      {<RepoList repos={repos || []} accessToken={token} refreshRepos={refreshRepos} />}
       {languages && <LanguageChart languages={languages} />}
       <ActivityList activities={activities || []} />
       {followers && following && <FollowersSection followers={followers} following={following} />}
+      <Toaster />
     </motion.div>
   );
 };

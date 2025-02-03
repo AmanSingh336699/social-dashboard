@@ -1,23 +1,27 @@
 import { GitHubRepo } from "@/types/githubType";
 import { FaStar } from "react-icons/fa";
 import { GiKnifeFork } from "react-icons/gi";
-import { BsClockHistory, BsSearch } from "react-icons/bs";
+import { BsClockHistory, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
 import { RiGitCommitLine } from "react-icons/ri";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useDebounce } from 'use-debounce';
+import toast from "react-hot-toast";
 
 interface RepoListProps {
   repos: GitHubRepo[];
+  accessToken: string;
+  refreshRepos: () => void;
 }
 
-const RepoList: React.FC<RepoListProps> = ({ repos }) => {
+const RepoList: React.FC<RepoListProps> = ({ repos, accessToken, refreshRepos }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [reposPerPage] = useState(6);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300); 
+  
 
   const filteredRepos = useMemo(() => {
     return repos.filter((repo) =>
@@ -32,6 +36,7 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
     return Math.ceil(filteredRepos.length / reposPerPage);
   }, [filteredRepos, reposPerPage])
 
+
   const handleSearchClick = useCallback(() => {
     setIsSearchVisible(prev => !prev)
   },[]);
@@ -45,6 +50,7 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
   }, []);
+
 
   const renderLanguages = useCallback((languages: { language: string; percentage: number }[]) => {
     return languages.map((lang) => (
@@ -80,57 +86,113 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
     }
   };
 
-  const RepoItem = ({ repo }: { repo: GitHubRepo }) => (
-    <motion.li
-      key={repo.id}
-      className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-lg flex flex-col justify-between"
-      whileHover={{ scale: 1.03 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Link
-        href={repo.html_url}
-        target="_blank"
-        className="text-sky-500 font-semibold text-lg truncate mb-2"
-      >
-        {repo.name}
-      </Link>
-      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 truncate">
-        {repo.description || "No description available."}
-      </p>
-      {repo.languages && repo.languages.length > 0 && (
-        <div className="text-sm mb-4">
-          <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Languages:</h3>
-          <div className="flex flex-wrap space-x-2">{renderLanguages(repo.languages)}</div>
-        </div>
-      )}
-      <div className="flex flex-wrap items-center justify-between text-gray-600 dark:text-gray-300 text-sm mb-3">
-        <span className="flex items-center">
-          <FaStar className="mr-1 text-yellow-400" />
-          {repo.stargazers_count}
-        </span>
-        <span className="flex items-center">
-          <GiKnifeFork className="mr-1 text-gray-700 dark:text-gray-400" />
-          {repo.forks_count}
-        </span>
-      </div>
-      <div className="flex items-center text-gray-600 dark:text-gray-300 mt-3 text-sm">
-        <BsClockHistory className="mr-2 text-blue-500" />
-        <span>
-          Last Commit:{" "}
-          {repo.last_commit !== "Unavailable"
-            ? repo.last_commit
-            : "Unavailable"}
-        </span>
-      </div>
-      {repo.commit_message && (
-        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-          <RiGitCommitLine className="mr-2 text-2xl text-emerald-600" />
-          <span className="font-medium">Commit Message: {repo.commit_message}</span>
-        </div>
-      )}
-    </motion.li>
-  )
+  const RepoItem = ({ repo }: { repo: GitHubRepo }) => {
+    const [dropDownOpen, setDropDownOpen] = useState(false)
+    const dropDownRef = useRef(null)
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropDownRef.current && !(dropDownRef.current as HTMLElement).contains(event.target as Node)) {
+        setDropDownOpen(false);
+        }
+      };
 
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [])
+    const handleDeleteRepo = async () => {
+      const confirmDelete = confirm(`Are you sure you want to delete the repository: ${repo.name}?`) //new
+      if(!confirmDelete) return //new
+  
+      try {
+        const response = await fetch("/api/delete-repo", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json"},
+          body: JSON.stringify({
+            repoName: repo.name,
+            accessToken,
+            username: repo.owner.login
+          })
+        })
+        if(response.ok){
+          toast.success("Repository deleted successfully")
+          refreshRepos();
+        } else {
+          toast.error("Failed to delete repository. Please try again.")
+        }
+      } catch (error) {
+        toast.error("Error deleting repository")
+      }
+    }
+    return (
+        <motion.li
+          key={repo.id}
+          className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-lg flex flex-col justify-between"
+          whileHover={{ scale: 1.03 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="absolute top-2 right-2" ref={dropDownRef}>
+            <button className="text-gray-600 dark:text-gray-300" onClick={() => setDropDownOpen(prev => !prev)}>
+              <BsThreeDotsVertical className="text-xl" />
+            </button>
+            <AnimatePresence>
+              {dropDownOpen && (
+                <motion.div initial={{ opacity: 0, y: -10, scale: 0.95}}
+                 animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.95 }} 
+                 transition={{ duration: 0.2 }} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg p-2 rounded-lg border border-gray-300 dark:border-gray-600">
+                  <button className="text-rose-600 px-4 py-2 block w-full text-left hover:bg-rose-50 dark:hover:bg-rose-700"
+                    onClick={handleDeleteRepo}>
+                    Delete Repo
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <Link
+            href={repo.html_url}
+            target="_blank"
+            className="text-sky-500 font-semibold text-lg truncate mb-2"
+          >
+            {repo.name}
+          </Link>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 truncate">
+            {repo.description || "No description available."}
+          </p>
+          {repo.languages && repo.languages.length > 0 && (
+            <div className="text-sm mb-4">
+              <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Languages:</h3>
+              <div className="flex flex-wrap space-x-2">{renderLanguages(repo.languages)}</div>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center justify-between text-gray-600 dark:text-gray-300 text-sm mb-3">
+            <span className="flex items-center">
+              <FaStar className="mr-1 text-yellow-400" />
+              {repo.stargazers_count}
+            </span>
+            <span className="flex items-center">
+              <GiKnifeFork className="mr-1 text-gray-700 dark:text-gray-400" />
+              {repo.forks_count}
+            </span>
+          </div>
+          <div className="flex items-center text-gray-600 dark:text-gray-300 mt-3 text-sm">
+            <BsClockHistory className="mr-2 text-blue-500" />
+            <span>
+              Last Commit:{" "}
+              {repo.last_commit !== "Unavailable"
+                ? repo.last_commit
+                : "Unavailable"}
+            </span>
+          </div>
+          {repo.commit_message && (
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <RiGitCommitLine className="mr-2 text-2xl text-emerald-600" />
+              <span className="font-medium">Commit Message: {repo.commit_message}</span>
+            </div>
+          )}
+        </motion.li>
+      )
+    }
   RepoList.displayName = "RepoList"
 
   return (
@@ -198,3 +260,4 @@ const RepoList: React.FC<RepoListProps> = ({ repos }) => {
 RepoList.displayName = "RepoList"
 
 export default RepoList;
+

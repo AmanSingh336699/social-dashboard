@@ -24,6 +24,9 @@ export interface GitHubRepo {
     languages_url: string;
     description: string;
     languages: Language[];
+    owner: {
+        login: string;
+      };
 }
 
 
