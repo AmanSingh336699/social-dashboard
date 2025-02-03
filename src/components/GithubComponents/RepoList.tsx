@@ -131,72 +131,152 @@ const RepoList: React.FC<RepoListProps> = ({ repos, accessToken, refreshRepos })
       }
     }
     return (
-        <motion.li
-          key={repo.id}
-          className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-lg flex flex-col justify-between"
-          whileHover={{ scale: 1.03 }}
-          transition={{ duration: 0.3 }}
+      <motion.li
+        key={repo.id}
+        className="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg shadow-lg flex flex-col justify-between relative" // Added relative class to parent container
+        whileHover={{ scale: 1.03 }}
+        transition={{ duration: 0.3 }}
+      >
+      <div className="absolute top-2 right-2 sm:right-2 sm:top-2 md:top-2 md:right-2" ref={dropDownRef}> {/* Added responsive positioning for top-right corner */}
+        <button
+          className="text-gray-700 dark:text-gray-300"
+          onClick={() => setDropDownOpen(prev => !prev)}
         >
-          <div className="absolute top-2 right-2" ref={dropDownRef}>
-            <button className="text-gray-700 dark:text-gray-300" onClick={() => setDropDownOpen(prev => !prev)}>
-              <BsThreeDotsVertical className="text-xl" />
-            </button>
-            <AnimatePresence>
-              {dropDownOpen && (
-                <motion.div initial={{ opacity: 0, y: -10, scale: 0.95}}
-                 animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.95 }} 
-                 transition={{ duration: 0.2 }} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg p-2 rounded-lg border border-gray-300 dark:border-gray-600">
-                  <button className="text-rose-600 px-4 rounded-md py-2 block w-full text-left hover:bg-rose-50 dark:hover:bg-rose-700"
-                    onClick={() => setIsModalOpen(true)}>
-                    Delete Repo
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <Link
-            href={repo.html_url}
-            target="_blank"
-            className="text-sky-500 font-semibold text-lg truncate mb-2"
+          <BsThreeDotsVertical className="text-xl" />
+        </button>
+
+      <AnimatePresence>
+        {dropDownOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg p-2 rounded-lg border border-gray-300 dark:border-gray-600"
           >
-            {repo.name}
-          </Link>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 truncate">
-            {repo.description || "No description available."}
-          </p>
-          <ConfirmModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleDeleteRepo} />
-          {repo.languages && repo.languages.length > 0 && (
-            <div className="text-sm mb-4">
-              <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Languages:</h3>
-              <div className="flex flex-wrap space-x-2">{renderLanguages(repo.languages)}</div>
-            </div>
+            <button
+              className="text-rose-600 px-4 rounded-md py-2 block w-full text-left"
+              onClick={() => setIsModalOpen(true)}
+            >
+                Delete Repo
+              </button>
+            </motion.div>
           )}
-          <div className="flex flex-wrap items-center justify-between text-gray-600 dark:text-gray-300 text-sm mb-3">
-            <span className="flex items-center">
-              <FaStar className="mr-1 text-yellow-400" />
-              {repo.stargazers_count}
-            </span>
-            <span className="flex items-center">
-              <GiKnifeFork className="mr-1 text-gray-700 dark:text-gray-400" />
-              {repo.forks_count}
-            </span>
-          </div>
-          <div className="flex items-center text-gray-600 dark:text-gray-300 mt-3 text-sm">
-            <BsClockHistory className="mr-2 text-blue-500" />
-            <span>
-              Last Commit:{" "}
-              {repo.last_commit !== "Unavailable"
-                ? repo.last_commit
-                : "Unavailable"}
-            </span>
-          </div>
-          {repo.commit_message && (
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-              <RiGitCommitLine className="mr-2 text-2xl text-emerald-600" />
-              <span className="font-medium">Commit Message: {repo.commit_message}</span>
-            </div>
-          )}
-        </motion.li>
+        </AnimatePresence>
+      </div>
+
+        <Link
+          href={repo.html_url}
+          target="_blank"
+          className="text-sky-500 font-semibold text-lg truncate mb-2"
+        >
+          {repo.name}
+      </Link>
+      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 truncate">
+        {repo.description || "No description available."}
+      </p>
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleDeleteRepo}
+      />
+      {repo.languages && repo.languages.length > 0 && (
+        <div className="text-sm mb-4">
+          <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Languages:</h3>
+          <div className="flex flex-wrap space-x-2">{renderLanguages(repo.languages)}</div>
+        </div>
+      )}
+      <div className="flex flex-wrap items-center justify-between text-gray-600 dark:text-gray-300 text-sm mb-3">
+        <span className="flex items-center">
+          <FaStar className="mr-1 text-yellow-400" />
+          {repo.stargazers_count}
+        </span>
+        <span className="flex items-center">
+          <GiKnifeFork className="mr-1 text-gray-700 dark:text-gray-400" />
+          {repo.forks_count}
+        </span>
+      </div>
+      <div className="flex items-center text-gray-600 dark:text-gray-300 mt-3 text-sm">
+        <BsClockHistory className="mr-2 text-blue-500" />
+        <span>
+          Last Commit:{" "}
+          {repo.last_commit !== "Unavailable" ? repo.last_commit : "Unavailable"}
+        </span>
+      </div>
+      {repo.commit_message && (
+        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+          <RiGitCommitLine className="mr-2 text-2xl text-emerald-600" />
+          <span className="font-medium">Commit Message: {repo.commit_message}</span>
+        </div>
+      )}
+    </motion.li>
+
+        // <motion.li
+        //   key={repo.id}
+        //   className="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg shadow-lg flex flex-col justify-between relative"
+        //   whileHover={{ scale: 1.03 }}
+        //   transition={{ duration: 0.3 }}
+        // >
+        //   <div className="absolute top-2 right-2" ref={dropDownRef}>
+        //     <button className="text-gray-700 dark:text-gray-300" onClick={() => setDropDownOpen(prev => !prev)}>
+        //       <BsThreeDotsVertical className="text-xl" />
+        //     </button>
+        //     <AnimatePresence>
+        //       {dropDownOpen && (
+        //         <motion.div initial={{ opacity: 0, y: -10, scale: 0.95}}
+        //          animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.95 }} 
+        //          transition={{ duration: 0.2 }} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg p-2 rounded-lg border border-gray-300 dark:border-gray-600">
+        //           <button className="text-rose-600 px-4 rounded-md py-2 block w-full text-left"
+        //             onClick={() => setIsModalOpen(true)}>
+        //             Delete Repo
+        //           </button>
+        //         </motion.div>
+        //       )}
+        //     </AnimatePresence>
+        //   </div>
+        //   <Link
+        //     href={repo.html_url}
+        //     target="_blank"
+        //     className="text-sky-500 font-semibold text-lg truncate mb-2"
+        //   >
+        //     {repo.name}
+        //   </Link>
+        //   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 truncate">
+        //     {repo.description || "No description available."}
+        //   </p>
+        //   <ConfirmModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleDeleteRepo} />
+        //   {repo.languages && repo.languages.length > 0 && (
+        //     <div className="text-sm mb-4">
+        //       <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Languages:</h3>
+        //       <div className="flex flex-wrap space-x-2">{renderLanguages(repo.languages)}</div>
+        //     </div>
+        //   )}
+        //   <div className="flex flex-wrap items-center justify-between text-gray-600 dark:text-gray-300 text-sm mb-3">
+        //     <span className="flex items-center">
+        //       <FaStar className="mr-1 text-yellow-400" />
+        //       {repo.stargazers_count}
+        //     </span>
+        //     <span className="flex items-center">
+        //       <GiKnifeFork className="mr-1 text-gray-700 dark:text-gray-400" />
+        //       {repo.forks_count}
+        //     </span>
+        //   </div>
+        //   <div className="flex items-center text-gray-600 dark:text-gray-300 mt-3 text-sm">
+        //     <BsClockHistory className="mr-2 text-blue-500" />
+        //     <span>
+        //       Last Commit:{" "}
+        //       {repo.last_commit !== "Unavailable"
+        //         ? repo.last_commit
+        //         : "Unavailable"}
+        //     </span>
+        //   </div>
+        //   {repo.commit_message && (
+        //     <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+        //       <RiGitCommitLine className="mr-2 text-2xl text-emerald-600" />
+        //       <span className="font-medium">Commit Message: {repo.commit_message}</span>
+        //     </div>
+        //   )}
+        // </motion.li>
       )
     }
   RepoList.displayName = "RepoList"
