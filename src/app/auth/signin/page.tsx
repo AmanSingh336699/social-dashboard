@@ -16,22 +16,32 @@ const LoginPage = () => {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="bg-white p-8 rounded-lg max-w-sm w-full">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-                    Sign in for DashBoard
-                </h2>
-                <motion.button whileHover={{scale: 1.1, rotate: 5, transition: { type: "spring", stiffness: 300, damping: 10 },}} whileTap={{ scale: 0.95, transition: { type: "spring", stiffness: 500, damping: 20 }}}
-                 onClick={handleGithubLogin} className="w-full flex items-center justify-center bg-black
-                 text-white py-2 px-4 rounded-md hover:bg-gray-800 transition duration-200" disabled={loading}>
-                    {
-                    loading ? <Loader /> : <>
-                            <FaGithub className="mr-2" />
-                            <span>Sign in with GitHub</span>
-                        </>
-                    }
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200">
+            <motion.div
+                className="bg-white p-10 rounded-xl shadow-lg max-w-sm w-full"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                whileHover={{ scale: 1.02 }}
+            >
+                <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Sign in to Dashboard</h2>
+                <motion.button
+                whileHover={{ scale: 1.1, rotate: 3 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleGithubLogin}
+                className="w-full flex items-center justify-center bg-black text-white py-3 px-5 rounded-lg font-medium hover:bg-gray-800 transition duration-300 shadow-md"
+                disabled={loading}
+                >
+                {loading ? (
+                    <Loader />
+                ) : (
+                    <>
+                    <FaGithub className="mr-3 text-xl" />
+                    <span>Sign in with GitHub</span>
+                    </>
+                )}
                 </motion.button>
-            </div>
+            </motion.div>
         </div>
     )
 }
