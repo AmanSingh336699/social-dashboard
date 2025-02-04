@@ -26,11 +26,11 @@ const LoginPage = () => {
             >
                 <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Sign in to Dashboard</h2>
                 <motion.button
-                whileHover={{ scale: 1.1, rotate: 3 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleGithubLogin}
-                className="w-full flex items-center justify-center bg-black text-white py-3 px-5 rounded-lg font-medium hover:bg-gray-800 transition duration-300 shadow-md"
-                disabled={loading}
+                    whileHover={{ scale: 1.1, rotate: 3 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleGithubLogin}
+                    className="w-full flex items-center justify-center bg-black text-white py-3 px-5 rounded-lg font-medium hover:bg-gray-800 transition duration-300 shadow-md"
+                    disabled={loading}
                 >
                 {loading ? (
                     <Loader />

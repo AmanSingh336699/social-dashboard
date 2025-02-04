@@ -21,8 +21,6 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Unauthorized: Invalid token" }, { status: 403 });
         }
 
-        const user = await userResponse.json();
-
         const repoResponse = await fetch(`${GITHUB_API_URL}/repos/${username}/${repoName}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
