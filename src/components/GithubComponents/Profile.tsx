@@ -2,6 +2,7 @@ import { BsPerson } from "react-icons/bs";
 import { FaUserFriends } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { GitHubProfile } from "@/types/githubType";
+import { memo } from "react";
 
 interface ProfileSectionProps {
   profile: GitHubProfile;
@@ -44,4 +45,4 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ profile }) => (
   </motion.div>
 );
 
-export default ProfileSection;
+export default memo(ProfileSection);

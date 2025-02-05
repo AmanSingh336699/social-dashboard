@@ -21,8 +21,11 @@ const LanguageChart = dynamic(() => import("@/components/GithubComponents/Langua
   ssr: false
 })
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
+import { AiOutlinePlus } from "react-icons/ai";
+import AddRepo from "@/components/GithubComponents/AddRepo";
+import Add from "@/components/UI/Add";
 const FollowersSection = dynamic(() => import("@/components/GithubComponents/FollowersSection"), {
   ssr: false
 })
@@ -31,7 +34,7 @@ const FollowersSection = dynamic(() => import("@/components/GithubComponents/Fol
 const GitHubDashboard = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-
+  const [showAddRepo, setShowAddRepo] = useState(false)
   const token = session?.accessToken as string;
   const username = session?.user?.name as string;
 
@@ -43,7 +46,7 @@ const GitHubDashboard = () => {
 
   const { data: repos, isLoading: reposLoading, refetch: refreshRepos } = useQuery<GitHubRepo[]>({
     queryKey: ["githubRepo", username],
-    queryFn: () => fetchUserRepo(username, token),
+    queryFn: () => fetchUserRepo(username),
     enabled: !!username && !!token
   });
 
@@ -82,7 +85,7 @@ const GitHubDashboard = () => {
     },[status, router])
   
     if(status === "loading"){
-    return <Loader />
+      return <Loader />
     }
 
   if (profileLoading || reposLoading ||
@@ -101,7 +104,19 @@ const GitHubDashboard = () => {
       transition={{ duration: 0.8 }}
     >
       <ProfileSection profile={profile} />
-      {<RepoList repos={repos || []} accessToken={token} refreshRepos={refreshRepos} />}
+      <div className="flex justify-between items-center bg-gray-100 p-4 rounded-md shadow-md">
+        <h2 className="text-xl font-semibold text-gray-800">Repositories</h2>
+        <button onClick={() => setShowAddRepo(prev => !prev)} className="flex items-center px-4 py-2 rounded-md text-white hover:bg-sky-700 bg-sky-500 transition">
+          <Add />
+          <span>{showAddRepo ? "Close" : "Add Repo"}</span>
+        </button>
+      </div>
+      {showAddRepo && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+          <AddRepo refreshRepos={refreshRepos} />
+        </motion.div>
+      )}
+      {<RepoList repos={repos || []} refreshRepos={refreshRepos} />}
       {languages && <LanguageChart languages={languages} />}
       <ActivityList activities={activities || []} />
       {followers && following && <FollowersSection followers={followers} following={following} />}

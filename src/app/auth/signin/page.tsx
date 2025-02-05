@@ -33,11 +33,11 @@ const LoginPage = () => {
                     disabled={loading}
                 >
                 {loading ? (
-                    <Loader />
+                    <Loader size={20} button />
                 ) : (
                     <>
-                    <FaGithub className="mr-3 text-xl" />
-                    <span>Sign in with GitHub</span>
+                        <FaGithub className="mr-3 text-xl" />
+                        <span>Sign in with GitHub</span>
                     </>
                 )}
                 </motion.button>

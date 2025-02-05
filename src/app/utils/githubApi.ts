@@ -28,13 +28,14 @@ export const fetchUserProfile = async (username: string, token: string): Promise
     return await response.json() as GitHubProfile
 }
 
-export const fetchUserRepo = async (username: string, token: string): Promise<RepoCommit[]> => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}/repos`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
+export const fetchUserRepo = async (username: string): Promise<RepoCommit[]> => {
+  const headers = {
+    Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_BASE_ACCESS_TOKEN}`,
+    Accept: "application/vnd.github.v3+json",
+  }
+  const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/users/${username}/repos?visibility=all`,
+    { headers }
+  )
   if (!response.ok) {
     throw new Error("Failed to fetch user repositories");
   }
@@ -49,14 +50,14 @@ export const fetchUserRepo = async (username: string, token: string): Promise<Re
 
       const commitUrl = repo.commits_url.replace("{/sha}", "");
       const commitsResponse = await fetch(commitUrl, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_BASE_ACCESS_TOKEN}` },
       });
 
       let languages: { language: string; percentage: number }[] = [];
       const languagesResponse = await fetch(
         `${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/repos/${username}/${repo.name}/languages`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers
         }
       );
       if (languagesResponse.ok) {
@@ -109,7 +110,7 @@ export const fetchRepoLanguages = async (repos: GitHubRepo[], token: string): Pr
         })
 
         if(!response.ok){
-            throw new Error("Failed to fetch repo languages")
+          throw new Error("Failed to fetch repo languages")
         }
 
         const repoLanguages = await response.json() as { [key: string]: number }
@@ -156,4 +157,30 @@ export const fetchUserRecentActivity = async (username: string, token: string): 
     }
     const events = await response.json() as GitHubActivity[]
     return events
+}
+
+export const createRepo = async (name: string, description: string, isPrivate: boolean) => {
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_GITHUB_BASE_URL}/user/repos`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_BASE_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        private: isPrivate,
+      }),
+    });
+    const data = await response.json()
+    if(!response.ok){
+      throw new Error(data.message || "Failed to create a new repo")
+    }
+    return data
+    
+  } catch (error) {
+    throw error
+  }
 }

@@ -1,4 +1,5 @@
 import { GitHubActivity } from "@/types/githubType";
+import { memo } from "react";
 import { FaHistory } from "react-icons/fa";
 
 
@@ -32,4 +33,4 @@ const ActivityList: React.FC<ActivityListProps> = ({ activities }) => {
   );
 };
 
-export default ActivityList;
+export default memo(ActivityList);

@@ -16,11 +16,13 @@ export interface GitHubRepo {
     id: number;
     name: string;
     html_url: string;
+    private: boolean;
     stargazers_count: number;
     forks_count: number;
     last_commit: string;
     commit_message: string;
     commits_url: string;
+    watchers_count: number;
     languages_url: string;
     description: string;
     languages: Language[];

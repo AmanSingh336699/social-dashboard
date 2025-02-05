@@ -2,6 +2,7 @@ import Modal from "react-modal";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaExclamationTriangle } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
+import { memo } from "react";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -73,4 +74,4 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm 
   );
 };
 
-export default ConfirmModal;
+export default memo(ConfirmModal);
