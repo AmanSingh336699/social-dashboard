@@ -23,7 +23,6 @@ const LanguageChart = dynamic(() => import("@/components/GithubComponents/Langua
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
-import { AiOutlinePlus } from "react-icons/ai";
 import AddRepo from "@/components/GithubComponents/AddRepo";
 import Add from "@/components/UI/Add";
 const FollowersSection = dynamic(() => import("@/components/GithubComponents/FollowersSection"), {

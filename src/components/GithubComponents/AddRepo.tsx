@@ -29,7 +29,7 @@ const AddRepo = ({ refreshRepos }: AddRepoProps) => {
                 setDescription("")
                 setIsPrivate(false)
             }
-        } catch (error) {
+        } catch (_error) {
             toast.error("Failed to create repository")
         }
         setLoading(false)
